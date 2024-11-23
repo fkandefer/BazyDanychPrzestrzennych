@@ -56,7 +56,7 @@ where nazwa = 'obiekt4';
 select st_geometrytype(geometria)
     from obiekty where nazwa = 'obiekt4';
 
--- zadanie 3
+-- zadanie 4
 
 insert into obiekty (nazwa, geometria)
 values ('obiekt7',
@@ -67,7 +67,7 @@ values ('obiekt7',
 );
 
 
--- zadanie 4
+-- zadanie 5
 
 SELECT  sum(ST_Area(
                ST_Buffer(geometria, 5)))
