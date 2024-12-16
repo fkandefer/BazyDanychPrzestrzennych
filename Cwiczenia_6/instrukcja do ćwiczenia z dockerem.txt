@@ -1,0 +1,57 @@
+instrukcja do ćwiczenia z dockerem
+
+1.należy zainstalować dockera i znaleźć adres ip wsl wpisując komendę
+
+ipconfig
+
+2.szukamy zakładki "Ethernet adapter vEthernet (WSL (Hyper-V firewall)):" i w niej "IPv4 address", np. "172.25.80.1"
+
+- utwórz folder map a w nim plik dem.map:
+
+mkdir map
+
+vim dem.map
+
+3.wklejamy Mapfile i poprawiamy linijkę Data aby zgadzała się z naszymi danymi logowania, bazę danych i adresem hosta z 2 punktu:
+
+MAP
+NAME 'map'
+SIZE 800 650
+STATUS ON
+EXTENT -58968 145487 30916 206234
+UNITS METERS
+WEB
+METADATA
+'wms_title' 'Terrain wms'
+'wms_srs' 'EPSG:3763 EPSG:4326 EPSG:3857'
+'wms_enable_request' '*'
+'wms_onlineresource'
+'http://54.37.13.53/mapservices/srtm'
+END
+END
+PROJECTION
+'init=epsg:3763'
+END
+LAYER
+NAME srtm
+TYPE raster
+STATUS OFF
+DATA "PG:host=localhost port=5432 dbname='postgis_raster'
+user='sasig' password='postgis' schema='rasters' table='dem' mode='2'"
+PROCESSING "SCALE=AUTO"
+PROCESSING "NODATA=-32767"
+OFFSITE 0 0 0
+METADATA
+'wms_title' 'srtm'
+END
+END
+END
+
+4.pobieramy obraz z docker huba i uruchamiamy kontener:
+
+sudo docker run -e SERVICE_TYPE=WFS -e MS_MAPFILE=/srv/data/dem.map --rm -d -p 8182:80 --name mapserver-example -v `pwd`/map:/srv/data pdok/mapserver 
+
+
+5.jako że używamy WFS to tworzymy zapytanie i wklejamy w przeglądarkę można skorzystać z już utowrzonego przeze mnie:
+
+http://localhost:8182/mapserver?map=/srv/data/dem.map&SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=map&CRS=EPSG:3763&BBOX=-58968,155687,10916,206234&WIDTH=800&HEIGHT=650&FORMAT=image/png
